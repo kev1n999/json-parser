@@ -141,19 +141,19 @@ impl Lexer {
     match self.get_current() {
       Some('{') => {
         self.advance_current();
-        Token { token_type: TokenKind::LeftBracket, lexeme: '{'.to_string(), }
+        Token { token_type: TokenKind::LeftBrace, lexeme: '{'.to_string(), }
       },
       Some('}') => {
         self.advance_current();
-        Token { token_type: TokenKind::RightBracket, lexeme: '}'.to_string(), }
+        Token { token_type: TokenKind::RightBrace, lexeme: '}'.to_string(), }
       },
       Some('[') => {
         self.advance_current();
-        Token { token_type: TokenKind::LeftBrace, lexeme: '['.to_string(), }
+        Token { token_type: TokenKind::LeftBracket, lexeme: '['.to_string(), }
       },
       Some(']') => {
         self.advance_current();
-        Token { token_type: TokenKind::RightBrace, lexeme: ']'.to_string(), }
+        Token { token_type: TokenKind::RightBracket, lexeme: ']'.to_string(), }
       },
       Some(',') => {
         self.advance_current();
