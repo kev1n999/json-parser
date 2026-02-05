@@ -39,7 +39,7 @@ impl Lexer {
       panic!("The input is empty!");
     }
 
-    while let Some(characeter) = self.get_current() {
+    while let Some(_) = self.get_current() {
       println!("{:?}", self.next_token());
     }
   }
@@ -53,19 +53,21 @@ impl Lexer {
   }
 
   fn ignore_whitespace(&mut self) {
-    while let Some(character) = self.get_current() {
-      if character.is_whitespace() { self.advance_current(); }
-      else { break; }
-    }
+    while let Some(c) = self.get_current() {
+      if c.is_whitespace() {
+        self.advance_current();
+      } else { break; }
+    };
   }
 
   fn string_tokenize(&mut self) -> Token {
     let mut string_val = String::new();
+
     if let Some(character) = self.get_current() {
       if character == '"' {
         self.advance_current();
         while let Some(c) = self.get_current() {
-          if c == '"' { break; };
+          if c == '"' { self.advance_current(); break; };
           string_val.push(c);
           self.advance_current();
         }
@@ -73,6 +75,45 @@ impl Lexer {
     }
 
     Token { token_type: TokenKind::String(string_val.clone()), lexeme: string_val.clone() }
+  }
+
+  fn number_tokenize(&mut self) -> Token {
+    let mut number_val = String::new();
+
+    if let Some('-') = self.get_current() {
+      number_val.push('-');
+      self.advance_current();
+    }
+
+    let mut has_number = false;
+
+    while let Some(character) = self.get_current() {
+      if character.is_ascii_digit() {
+        number_val.push(character);
+        self.advance_current();
+        has_number = true;
+      } else { break; }
+    }
+
+    if let Some('.') = self.get_current() {
+      number_val.push('.');
+      self.advance_current();
+
+      let mut has_frac_number = false;
+      while let Some(c) = self.get_current() {
+        if c.is_ascii_digit() {
+          number_val.push(c);
+          self.advance_current();
+          has_frac_number = true;
+        } else { break; }
+      }
+
+      if !has_frac_number { panic!("invalid number! {}", number_val); }
+    }
+
+    if !has_number { panic!("invalid digit!"); }
+    let val = number_val.parse::<f64>().expect("an error ocurred!");
+    Token { token_type: TokenKind::Number(val), lexeme: number_val, }
   }
 
   pub fn next_token(&mut self) -> Token {
@@ -104,7 +145,7 @@ impl Lexer {
         Token { token_type: TokenKind::Colon, lexeme: ':'.to_string(), }
       },
       Some('"') => self.string_tokenize(),
-
+      Some(c) if c.is_ascii_digit() || c == '-' => self.number_tokenize(),
       None => {
         Token { token_type: TokenKind::EOF, lexeme: "".to_string(), }
       }
