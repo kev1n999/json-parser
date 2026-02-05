@@ -77,6 +77,25 @@ impl Lexer {
     Token { token_type: TokenKind::String(string_val.clone()), lexeme: string_val.clone() }
   }
 
+  fn bool_or_null_tokenize(&mut self) -> Token {
+    let mut token = String::new();
+
+    while let Some(character) = self.get_current() {
+      if character.is_alphanumeric() {
+        token.push(character);
+        self.advance_current();
+      } else { break; }
+    }
+
+    match token.as_str() {
+      "true" => Token { token_type: TokenKind::True, lexeme: token, },
+      "false" => Token { token_type: TokenKind::False, lexeme: token, },
+      "null" => Token { token_type: TokenKind::Null, lexeme: token, },
+      _ => panic!("Invalid token: {}", token),
+    }
+  }
+
+
   fn number_tokenize(&mut self) -> Token {
     let mut number_val = String::new();
 
@@ -146,6 +165,7 @@ impl Lexer {
       },
       Some('"') => self.string_tokenize(),
       Some(c) if c.is_ascii_digit() || c == '-' => self.number_tokenize(),
+      Some('t'|'f'|'n') => self.bool_or_null_tokenize(),
       None => {
         Token { token_type: TokenKind::EOF, lexeme: "".to_string(), }
       }
