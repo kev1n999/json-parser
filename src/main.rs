@@ -1,4 +1,5 @@
 mod lexer;
+mod parser;
 
 fn main() {
   let source = r#"
@@ -54,5 +55,11 @@ fn main() {
   "#;
   let mut lexer = lexer::Lexer::new(source);
 
+  // display tokens
   lexer.display();
+
+  let mut tokens = lexer::Lexer::get_tokens(&mut lexer);
+  let mut parser = parser::Parser::parser(tokens);
+
+
 }

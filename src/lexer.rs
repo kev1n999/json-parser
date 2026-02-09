@@ -19,8 +19,8 @@ pub enum TokenKind {
 
 #[derive(Debug)]
 pub struct Token {
-  token_type: TokenKind,
-  lexeme: String,
+  pub token_type: TokenKind,
+  pub lexeme: String,
 }
 
 #[derive(Debug)]
@@ -34,6 +34,15 @@ impl Lexer {
     Lexer { input: source.chars().collect(), current: 0, }
   }
 
+  pub fn get_tokens(self: &mut Self) -> Vec<Token> {
+    let mut tokens: Vec<Token> = Vec::new();
+
+    while let Some(_) = self.get_current() {
+      tokens.push(self.next_token());
+    }
+
+    tokens
+  }
   pub fn display(&mut self) {
     if self.input.is_empty() {
       panic!("The input is empty!");
