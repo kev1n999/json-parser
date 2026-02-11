@@ -56,10 +56,16 @@ fn main() {
   let mut lexer = lexer::Lexer::new(source);
 
   // display tokens
-  lexer.display();
+  // lexer.display();
 
-  let mut tokens = lexer::Lexer::get_tokens(&mut lexer);
+  let tokens = lexer::Lexer::get_tokens(&mut lexer);
   let mut parser = parser::Parser::parser(tokens);
+  let parsed = parser.object_parse();
 
+  if let parser::JsonObject::Object(obj) = parsed {
+    if let Some(val) = obj.get("usuario") {
+      println!("{:?}", val);
+    }
+  }
 
 }
