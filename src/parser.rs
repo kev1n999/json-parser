@@ -21,23 +21,70 @@ impl Parser {
     Parser { tokens: tokens, current: 0, }
   }
 
-  pub fn parse_object(&mut self) -> JsonObject {
-    match self.peek() {
-      Some(token) => {
-        match token.token_type {
-          lexer::TokenKind::String(s) => self.string_parse(),
-          lexer::TokenKind::Number(n) => self.number_parse(),
-        }
-      }
-    }
-  }
-
   fn peek(&self) -> Option<&lexer::Token> {
     self.tokens.get(self.current)
   }
 
   fn advance_current(&mut self) {
     self.current += 1;
+  }
+
+  pub fn object_parse(&mut self) -> JsonObject {
+    match self.peek() {
+      Some(token) => {
+        match &token.token_type {
+          lexer::TokenKind::String(s) => self.string_parse(),
+          lexer::TokenKind::Number(n) => self.number_parse(),
+          lexer::TokenKind::LeftBracket => self.array_parse(),
+        }
+      },
+      None => panic!("an error ocurred"),
+    }
+  }
+
+  fn array_parse(&mut self) -> JsonObject {
+    match self.peek() {  
+      Some(token) => {
+        if let lexer::TokenKind::LeftBracket = &token.token_type {
+          self.advance_current(); 
+        } else { return JsonObject::Null; }
+      },
+      None => panic!("eof!"),
+    }
+
+    let mut json_objects: Vec<JsonObject> = Vec::new();
+
+    loop {
+      match self.peek() {
+        Some(token) => {
+          if let lexer::TokenKind::RightBracket = &token.token_type {
+            self.advance_current();
+            break;
+          }
+
+          let parse_object: JsonObject = self.object_parse();
+          json_objects.push(parse_object);
+
+          match self.peek() {
+            Some(token) => {
+              if let lexer::TokenKind::Comma = &token.token_type {
+                self.advance_current();
+              } else {
+                if token.token_type != lexer::TokenKind::RightBracket {
+                  panic!("Syntax error!");
+                } else {
+                  self.advance_current();
+                  break; 
+                }
+              }
+            },
+            None => panic!("eof!"),
+          }
+        },
+        None => panic!("eof!"),
+      }
+    }
+    JsonObject::Array(json_objects)
   }
 
   fn string_parse(&mut self) -> JsonObject {
@@ -56,7 +103,10 @@ impl Parser {
     let peek_token = self.peek();
     if let Some(token) = peek_token {
       if let lexer::TokenKind::Number(n) = &token.token_type {
-        return JsonObject::Number(n.clone());
+        let number = *n;
+        self.advance_current();
+        return JsonObject::Number(number);
+
       }
     }
     JsonObject::Null

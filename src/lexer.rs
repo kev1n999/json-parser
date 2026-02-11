@@ -1,5 +1,5 @@
 // Enum to set all tokens to lexer
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum TokenKind {
   LeftBracket, // [
   RightBracket, // ]
