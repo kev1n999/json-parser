@@ -1,6 +1,6 @@
 use crate::lexer;
 use std::collections::{HashMap};
-use std::fmt; 
+use std::fmt;
 
 #[derive(Debug)]
 pub enum JsonObject {
@@ -10,6 +10,44 @@ pub enum JsonObject {
   Number(f64),
   Array(Vec<JsonObject>),
   Object(HashMap<String, JsonObject>)
+}
+
+impl fmt::Display for JsonObject {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      JsonObject::Null => write!(f, "null"),
+      JsonObject::Bool(boolean) => {
+        if boolean == &true {
+          write!(f, "true")
+        } else {
+          write!(f, "false")
+        }
+      },
+      JsonObject::String(string) => write!(f, "\"{}\"", string),
+      JsonObject::Number(number) => write!(f, "{}", number),
+      JsonObject::Array(arr) => {
+        write!(f, "[ ")?;
+        let mut first = true;
+        for item in arr {
+          if !first { write!(f, ", ")?; }
+          write!(f, "{}", item)?;
+          first = false;
+        }
+        write!(f, " ]")
+      },
+      JsonObject::Object(obj) => {
+        write!(f, "{{ ")?;
+        let mut first = true;
+        for (key, val) in obj {
+          if !first { write!(f, ", ")?; }
+          write!(f, "{}: {}", key, val)?;
+          first = false;
+        }
+
+        write!(f, " }}")
+      },
+    }
+  }
 }
 
 #[derive(Debug)]
@@ -78,7 +116,7 @@ impl Parser {
     match self.peek() {
       Some(token) => {
         if !matches!(&token.token_type, lexer::TokenKind::LeftBrace) {
-          return JsonObject::Null; 
+          return JsonObject::Null;
         }
         self.advance_current();
       },
@@ -128,10 +166,10 @@ impl Parser {
   }
 
   fn array_parse(&mut self) -> JsonObject {
-    match self.peek() {  
+    match self.peek() {
       Some(token) => {
         if let lexer::TokenKind::LeftBracket = &token.token_type {
-          self.advance_current(); 
+          self.advance_current();
         } else { return JsonObject::Null; }
       },
       None => panic!("eof!"),
@@ -159,7 +197,7 @@ impl Parser {
                   panic!("Syntax error!");
                 } else {
                   self.advance_current();
-                  break; 
+                  break;
                 }
               }
             },

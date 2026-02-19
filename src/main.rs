@@ -14,7 +14,7 @@ fn main() {
 
       if let parser::JsonObject::Object(obj) = parsed {
         if let Some(val) = obj.get("usuario") {
-          println!("{:?}", val);
+          println!("{}", val);
         }
       }
     },
